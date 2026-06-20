@@ -135,6 +135,10 @@ class SettingsPage extends StatelessWidget {
                 // ElevatedButton(onPressed: () {}, child: Text("Limits"))
               ],
             ),
+            SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: () {} /* TODO: add save functionality */,
+              child: Text("SAVE"))
           ],
         ),
       ),
