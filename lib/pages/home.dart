@@ -47,10 +47,6 @@ class _HomePageState extends State<HomePage> {
                       ),
                     );
                   },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xff2a273f),
-                      foregroundColor: Color(0xffe0def4)
-                    ),
                    child: Text("Settings"),
                    ),
                 ElevatedButton(

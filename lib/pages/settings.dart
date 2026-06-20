@@ -31,18 +31,10 @@ class SettingsPage extends StatelessWidget {
                children: [
                 ElevatedButton(
                   onPressed: () {},
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xff2a273f),
-                    foregroundColor: Color(0xffe0def4),
-                  ),
                   child: Text("Pair device/pair again"),
                 ),
                 ElevatedButton(
                   onPressed: () {},
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xff2a273f),
-                    foregroundColor: Color(0xffe0def4),
-                  ),
                   child: Text("Connect"), // TODO: connect/disconnect/not paired
                 ),
               ],
