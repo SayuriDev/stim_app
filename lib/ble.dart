@@ -17,6 +17,7 @@ class Ble {
   void scan() {
     FlutterBluePlus.startScan(
       timeout: const Duration(seconds: 5),
+      androidUsesFineLocation: true
     );
   }
 
@@ -25,6 +26,7 @@ class Ble {
 
   // connect
   Future<void> connect(BluetoothDevice d) async {
+    await FlutterBluePlus.stopScan();
     device = d;
     await device!.connect(license: License.nonprofit);
   }
@@ -44,3 +46,5 @@ class Ble {
     await char.write([value]);
   }
 }
+
+// FIXME: app craches when you disable bluetooth on phone while scanning

@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:stim_app/ble.dart';
+import 'package:stim_app/pages/scan.dart';
 
 final controllerA = TextEditingController();
 final controllerB = TextEditingController();
 
+final Ble ble = Ble();
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
@@ -30,7 +33,13 @@ class SettingsPage extends StatelessWidget {
             Row(
                children: [
                 ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => ScanPage(),
+                      ),
+                    );
+                  },
                   child: Text("Pair device/pair again"),
                 ),
                 ElevatedButton(
