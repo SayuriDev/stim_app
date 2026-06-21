@@ -49,26 +49,6 @@ class _HomePageState extends State<HomePage> {
                   },
                    child: Text("Settings"),
                    ),
-                ElevatedButton(
-                  onPressed: () {},
-                  style: ElevatedButton.styleFrom(
-
-                    fixedSize: Size.square(75),
-                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    backgroundColor: Color(0xffeb6f92),
-                    foregroundColor: Color(0xffe0def4),
-                  ),
-                  child: Text(
-                    "PANIC",
-                    style: TextStyle(
-                      color:Color(0xffe0def4),
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                        ),
-                        maxLines: 1,
-                        // overflow: TextOverflow.ellipsis,
-                    ),
-                  )
               ]
             ),
         ),
