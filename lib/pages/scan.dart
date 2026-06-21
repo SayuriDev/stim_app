@@ -70,11 +70,11 @@ ble.init().then((result) {
                   d.device.platformName.isEmpty
                     ? "Unknown"
                     : d.device.platformName,
-                  style: const TextStyle(color: Colors.white),
+                  style: const TextStyle(color: Color(0xffe0def4) ),
                 ),
                 subtitle: Text(
                   d.device.remoteId.toString(),
-                  style: const TextStyle(color: Colors.grey),
+                  style: const TextStyle(color: Color(0xff908caa) ),
                 ),
                 onTap: () async {
                   try {
