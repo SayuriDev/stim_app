@@ -47,9 +47,21 @@ class Ble {
 
   // connect
   Future<void> connect(BluetoothDevice d) async {
-    // await FlutterBluePlus.stopScan();
+    await FlutterBluePlus.stopScan();
+
     device = d;
-    await device!.connect(license: License.nonprofit);
+
+    try {
+      await device!.connect(
+        license: License.nonprofit,
+        timeout: const Duration(seconds: 10),
+        autoConnect: false,
+      );
+    } on FlutterBluePlusException catch (e) {
+      print("BLE connect error: $e");
+    } catch (e) {
+      print("Unknown error: $e");
+    }
   }
 
   // write

@@ -15,31 +15,32 @@ class _ScanPageState extends State<ScanPage> {
 void initState() {
   super.initState();
 
-  ble.init().then((result) {
-    if (!mounted) return;
+ble.init().then((result) {
+  if (!mounted) return;
 
-    switch (result) {
-      case BleInitResult.ok:
-        break;
+  switch (result) {
+    case BleInitResult.ok:
+      break;
 
-      case BleInitResult.notSupported:
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("This device does not support Bluetooth."),
-            elevation: 50,
-          ),
-        );
-        Navigator.pop(context);
-        break;
+    case BleInitResult.notSupported:
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Bluetooth not supported")),
+      );
 
-      case BleInitResult.disabled:
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Please enable Bluetooth."),
-          ),
-        );
-        Navigator.pop(context);
-        break;
+      Future.microtask(() {
+        if (mounted) Navigator.pop(context);
+      });
+      break;
+
+    case BleInitResult.disabled:
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Enable Bluetooth")),
+      );
+
+      Future.microtask(() {
+        if (mounted) Navigator.pop(context);
+      });
+      break;
     }
   });
 }
@@ -76,14 +77,24 @@ void initState() {
                   style: const TextStyle(color: Colors.grey),
                 ),
                 onTap: () async {
-                  await ble.connect(d.device);
-                  Navigator.pop(context);
-                  
+                  try {
+                    await ble.connect(d.device);
 
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Connected")),
-                  );
-                },
+                    if (!mounted) return;
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Connected")),
+                    );
+
+                    Navigator.pop(context);
+                  } catch (e) {
+                    if (!mounted) return;
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Connection failed")),
+                    );
+                  }
+                }
               );
             },
           );
