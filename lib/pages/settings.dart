@@ -4,6 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:stim_app/ble.dart';
 import 'package:stim_app/pages/scan.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+late SharedPreferences prefs;
 
 final controllerA = TextEditingController();
 final controllerB = TextEditingController();
@@ -18,6 +21,41 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
+  @override
+  void initState() {
+    super.initState();
+    loadPrefs();
+    // send saved data when ble is connected
+    ble.isConnected.addListener(_sendSavedLimitsIfConnected);
+  }
+
+  @override
+  void dispose() {
+    ble.isConnected.removeListener(_sendSavedLimitsIfConnected);
+    super.dispose();
+  }
+
+    void _sendSavedLimitsIfConnected() {
+    if (ble.isConnected.value) {
+      final a = int.tryParse(controllerA.text) ?? 0;
+      final b = int.tryParse(controllerB.text) ?? 0;
+      ble.writeArray([0, a]);
+      ble.writeArray([1, b]);
+    }
+  }
+
+  Future<void> loadPrefs() async {
+    prefs = await SharedPreferences.getInstance();
+
+    final a = prefs.getInt('a') ?? 0;
+    final b = prefs.getInt('b') ?? 0;
+
+    controllerA.text = a.toString();
+    controllerB.text = b.toString();
+
+    _sendSavedLimitsIfConnected();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -162,10 +200,13 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             SizedBox(height: 10),
             ElevatedButton(
-              onPressed: () {
-                ble.writeArray( [0, int.tryParse(controllerA.text) ?? 0, ] );
-                ble.writeArray( [1, int.tryParse(controllerB.text) ?? 0, ] );
-              } /* TODO: add save functionality */,
+              onPressed: () async {
+                await prefs.setInt('a', int.tryParse(controllerA.text) ?? 0);
+                await prefs.setInt('b', int.tryParse(controllerB.text) ?? 0);
+
+                ble.writeArray([0, int.tryParse(controllerA.text) ?? 0]);
+                ble.writeArray([1, int.tryParse(controllerB.text) ?? 0]);
+              },
               child: Text("SAVE"))
           ],
         ),
