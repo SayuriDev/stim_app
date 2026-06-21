@@ -8,10 +8,14 @@ final controllerB = TextEditingController();
 
 final Ble ble = Ble();
 
-class SettingsPage extends StatelessWidget {
+class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
 
+  @override
+  State<SettingsPage> createState() => _SettingsPageState();
+}
 
+class _SettingsPageState extends State<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -20,33 +24,49 @@ class SettingsPage extends StatelessWidget {
         foregroundColor: Color(0xffe0def4),
         backgroundColor: Color(0xff191724),
       ),
-      body: Center(
+      body: Container(
+        margin: const EdgeInsets.only(left: 10.0, right: 10, top: 5.0),
+
         child: Column(
           children: [
             Text(
               "Bluetooth",
               style: TextStyle(
                 color: Color(0xffe0def4),
-                fontSize: 20,
+                fontSize: 19,
               ),
             ),
-            Row(
-               children: [
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => ScanPage(),
+            ValueListenableBuilder(
+              valueListenable: ble.isConnected,
+              builder: (context, value, _) {
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  textBaseline: TextBaseline.alphabetic,
+                  children: [
+                    ElevatedButton(
+                      onPressed: () {
+                        if (ble.isConnected.value) {
+                          ble.disconnect();
+                        } else {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => ScanPage()),
+                          );
+                        }
+                            },
+                      child: Text(value ? "Disconnect" : "Connect"),
+                    ),
+                    Text(
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight(500),
+                        color: value ? Color(0xff56949f) : Color(0xffeb6f92),
                       ),
-                    );
-                  },
-                  child: Text("Pair device/pair again"),
-                ),
-                ElevatedButton(
-                  onPressed: () {},
-                  child: Text("Connect"), // TODO: connect/disconnect/not paired
-                ),
-              ],
+                      value ? "Connected" : "Not Connected",
+                    )
+                  ],
+                );
+              },
             ),
             SizedBox(height: 10),
             PreferredSize(
@@ -61,7 +81,7 @@ class SettingsPage extends StatelessWidget {
               "Limits",
               style: TextStyle(
                 color: Color(0xffe0def4),
-                fontSize: 20,
+                fontSize: 19,
               ),
             ),
             Row(

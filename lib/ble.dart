@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 
 enum BleInitResult {
@@ -20,6 +21,8 @@ class Ble {
 
   BluetoothDevice? device;
 
+  ValueNotifier<bool> isConnected = ValueNotifier(false);
+  
   Future<BleInitResult> init() async {
     if (!await FlutterBluePlus.isSupported) {
       return BleInitResult.notSupported;
@@ -57,9 +60,13 @@ class Ble {
         timeout: const Duration(seconds: 10),
         autoConnect: false,
       );
+
+      isConnected.value = true;
+
     } on FlutterBluePlusException catch (e) {
       print("BLE connect error: $e");
     } catch (e) {
+      isConnected.value = false;
       print("Unknown error: $e");
     }
   }
@@ -77,5 +84,19 @@ class Ble {
     );
 
     await char.write([value]);
+  }
+
+  // disconnect
+  Future<void> disconnect() async {
+    if (device == null) return;
+
+    try {
+      await device!.disconnect();
+    } catch (_) {
+      // ignore errors on disconnect
+    } finally {
+      isConnected.value = false;
+      device = null;
+    }
   }
 }

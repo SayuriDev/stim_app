@@ -79,6 +79,7 @@ ble.init().then((result) {
                 onTap: () async {
                   try {
                     await ble.connect(d.device);
+                    setState(() {});
 
                     if (!mounted) return;
 
