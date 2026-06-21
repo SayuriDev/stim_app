@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:stim_app/ble.dart';
 import 'package:stim_app/pages/settings.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 
@@ -10,11 +11,38 @@ class ScanPage extends StatefulWidget {
   State<ScanPage> createState() => _ScanPageState();
 }
 class _ScanPageState extends State<ScanPage> {
-  @override
-  void initState() {
-    super.initState();
-    ble.scan();
-  }
+@override
+void initState() {
+  super.initState();
+
+  ble.init().then((result) {
+    if (!mounted) return;
+
+    switch (result) {
+      case BleInitResult.ok:
+        break;
+
+      case BleInitResult.notSupported:
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("This device does not support Bluetooth."),
+            elevation: 50,
+          ),
+        );
+        Navigator.pop(context);
+        break;
+
+      case BleInitResult.disabled:
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Please enable Bluetooth."),
+          ),
+        );
+        Navigator.pop(context);
+        break;
+    }
+  });
+}
 
   @override
   Widget build(BuildContext context) {

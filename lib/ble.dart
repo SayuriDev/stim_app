@@ -1,5 +1,12 @@
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 
+enum BleInitResult {
+  ok,
+  notSupported,
+  disabled,
+}
+
+
 class Ble {
   // UUID ESP32
   static const serviceUuid =
@@ -12,6 +19,20 @@ class Ble {
       "93710002-0000-0000-0000-000000000000";
 
   BluetoothDevice? device;
+
+  Future<BleInitResult> init() async {
+    if (!await FlutterBluePlus.isSupported) {
+      return BleInitResult.notSupported;
+    }
+
+    final state = await FlutterBluePlus.adapterState.first;
+    if (state != BluetoothAdapterState.on) {
+      return BleInitResult.disabled;
+    }
+
+    scan();
+    return BleInitResult.ok;
+  }
 
   // scan
   void scan() {
@@ -26,7 +47,7 @@ class Ble {
 
   // connect
   Future<void> connect(BluetoothDevice d) async {
-    await FlutterBluePlus.stopScan();
+    // await FlutterBluePlus.stopScan();
     device = d;
     await device!.connect(license: License.nonprofit);
   }
@@ -47,4 +68,3 @@ class Ble {
   }
 }
 
-// FIXME: app craches when you disable bluetooth on phone while scanning
