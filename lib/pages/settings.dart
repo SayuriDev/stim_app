@@ -1,3 +1,5 @@
+import 'dart:core';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:stim_app/ble.dart';
@@ -160,7 +162,10 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             SizedBox(height: 10),
             ElevatedButton(
-              onPressed: () {} /* TODO: add save functionality */,
+              onPressed: () {
+                ble.writeArray( [0, int.tryParse(controllerA.text) ?? 0, ] );
+                ble.writeArray( [1, int.tryParse(controllerB.text) ?? 0, ] );
+              } /* TODO: add save functionality */,
               child: Text("SAVE"))
           ],
         ),
