@@ -25,6 +25,7 @@ class _SettingsPageState extends State<SettingsPage> {
   void initState() {
     super.initState();
     loadPrefs();
+    ble.tryAutoConnect();
     // send saved data when ble is connected
     ble.isConnected.addListener(_sendSavedLimitsIfConnected);
   }
