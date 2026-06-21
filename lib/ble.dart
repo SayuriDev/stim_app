@@ -72,7 +72,7 @@ class Ble {
   }
 
   // write
-  Future<void> write(int value) async {
+  Future<void> writeArray(List<int> value) async {
     final services = await device!.discoverServices();
 
     final service = services.firstWhere(
@@ -83,7 +83,10 @@ class Ble {
       (c) => c.uuid.toString() == controlsUUID,
     );
 
-    await char.write([value]);
+      await char.write(
+        value,
+        withoutResponse: false,
+      );
   }
 
   // disconnect

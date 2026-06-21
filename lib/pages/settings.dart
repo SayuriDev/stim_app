@@ -108,13 +108,15 @@ class _SettingsPageState extends State<SettingsPage> {
                         cursorColor: Color(0xffe0def4),
                         onChanged: (value) {
                           // make sure that the value cannot exceed 255
-                          final number = int.tryParse(value);
-                          if (number != null && number > 255) {
+                          final number = int.tryParse(value) ?? 0;
+                          if (number > 255) {
                             controllerA.text = "255";
                             controllerA.selection = TextSelection.fromPosition(
                               TextPosition(offset: controllerA.text.length),
-                              );
+                            );
                           }
+                          ble.writeArray([0, number]);
+                            return;
                         },
                       ),
                     ),
