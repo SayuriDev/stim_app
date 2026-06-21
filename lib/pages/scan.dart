@@ -77,6 +77,7 @@ void initState() {
                 ),
                 onTap: () async {
                   await ble.connect(d.device);
+                  Navigator.pop(context);
                   
 
                   ScaffoldMessenger.of(context).showSnackBar(

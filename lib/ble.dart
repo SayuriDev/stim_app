@@ -67,4 +67,3 @@ class Ble {
     await char.write([value]);
   }
 }
-
