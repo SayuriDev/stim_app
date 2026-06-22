@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:stim_app/pages/sd.dart';
 import 'package:stim_app/pages/settings.dart';
 
 class HomePage extends StatefulWidget {
@@ -40,7 +41,13 @@ class _HomePageState extends State<HomePage> {
             textBaseline:TextBaseline.alphabetic,
             children:[
                 ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => SDPage(),
+                      ),
+                    );
+                  },
                   child: Text("No file selected")
                   ),
                 ElevatedButton(
