@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
+import 'dart:convert';
 
 enum BleInitResult {
   ok,
@@ -17,10 +18,15 @@ class Ble {
 
   BluetoothDevice? device;
   BluetoothCharacteristic? _controlChar;
+  BluetoothCharacteristic? _filesChar;
   StreamSubscription<BluetoothConnectionState>? _deviceStateSubscription;
+  StreamSubscription<List<int>>? _filesSubscription;
+  StreamController<String> _filePathController = StreamController.broadcast();
   Timer? _heartbeatTimer;
   bool _isConnecting = false;
   ValueNotifier<bool> isConnected = ValueNotifier(false);
+
+  Stream<String> get filePathStream => _filePathController.stream;
 
   void _startHeartbeat() {
     _heartbeatTimer?.cancel();
@@ -78,6 +84,18 @@ class Ble {
       _controlChar = service.characteristics.firstWhere(
         (c) => c.uuid.toString() == controlsUUID,
       );
+      final fileChars = service.characteristics
+          .where((c) => c.uuid.toString() == filesUUID);
+      if (fileChars.isNotEmpty) {
+        _filesChar = fileChars.first;
+      }
+
+      if (_filesChar != null) {
+        await _filesChar!.setNotifyValue(true);
+        _filesSubscription?.cancel();
+        _filesSubscription = _filesChar!.value.listen(_handleFileNotification);
+      }
+
       isConnected.value = true;
       _startHeartbeat();
 
@@ -90,6 +108,9 @@ class Ble {
           _stopHeartbeat();
           isConnected.value = false;
           _controlChar = null;
+          _filesChar = null;
+          _filesSubscription?.cancel();
+          _filesSubscription = null;
           device = null;
           _deviceStateSubscription?.cancel();
           _deviceStateSubscription = null;
@@ -138,6 +159,29 @@ class Ble {
     }
   }
 
+  Future<void> requestFileList() async {
+    if (!isConnected.value) {
+      print("requestFileList: not connected");
+      return;
+    }
+    await writeArray([2, 0]);
+  }
+
+  void _handleFileNotification(List<int> bytes) {
+    if (bytes.isEmpty) return;
+    try {
+      final jsonString = utf8.decode(bytes);
+      final decoded = json.decode(jsonString);
+      if (decoded is List) {
+        final segments = decoded.cast<String>();
+        final path = '/${segments.join('/')}';
+        _filePathController.add(path);
+      }
+    } catch (e) {
+      print('file notification parse error: $e');
+    }
+  }
+
   // disconnect
   Future<void> disconnect() async {
     _stopHeartbeat();
@@ -149,8 +193,11 @@ class Ble {
     } finally {
       _deviceStateSubscription?.cancel();
       _deviceStateSubscription = null;
+      _filesSubscription?.cancel();
+      _filesSubscription = null;
       isConnected.value = false;
       _controlChar = null;
+      _filesChar = null;
       device = null;
     }
   }
