@@ -169,17 +169,118 @@ class Ble {
 
   void _handleFileNotification(List<int> bytes) {
     if (bytes.isEmpty) return;
-    try {
-      final jsonString = utf8.decode(bytes);
-      final decoded = json.decode(jsonString);
-      if (decoded is List) {
-        final segments = decoded.cast<String>();
-        final path = '/${segments.join('/')}';
-        _filePathController.add(path);
+
+    final rawValue = utf8.decode(bytes, allowMalformed: true).trim();
+    if (rawValue.isEmpty) return;
+
+    final records = _splitJsonRecords(rawValue);
+    for (final record in records) {
+      final normalizedRecord = record.trim();
+      if (normalizedRecord.isEmpty) continue;
+
+      String? path;
+      try {
+        final decoded = json.decode(normalizedRecord);
+        path = _extractPath(decoded);
+      } catch (_) {
+        path = _normalizeRawPath(normalizedRecord);
       }
-    } catch (e) {
-      print('file notification parse error: $e');
+
+      if (path != null) {
+        _filePathController.add(path);
+      } else {
+        debugPrint('Unhandled file notification payload: $normalizedRecord');
+      }
     }
+  }
+
+  List<String> _splitJsonRecords(String raw) {
+    final records = <String>[];
+    int depth = 0;
+    bool inString = false;
+    bool escaped = false;
+    int? recordStart;
+
+    for (var i = 0; i < raw.length; i++) {
+      final char = raw[i];
+      if (escaped) {
+        escaped = false;
+        continue;
+      }
+      if (char == '\\') {
+        escaped = true;
+        continue;
+      }
+      if (char == '"') {
+        inString = !inString;
+        continue;
+      }
+      if (inString) continue;
+
+      if (char == '{' || char == '[') {
+        if (depth == 0) {
+          recordStart = i;
+        }
+        depth++;
+      } else if (char == '}' || char == ']') {
+        depth--;
+        if (depth == 0 && recordStart != null) {
+          records.add(raw.substring(recordStart, i + 1));
+          recordStart = null;
+        }
+      }
+    }
+
+    if (records.isEmpty) {
+      return [raw];
+    }
+    return records;
+  }
+
+  String? _normalizeRawPath(String value) {
+    final trimmed = value.trim();
+    if (trimmed.isEmpty) return null;
+    if (trimmed.startsWith('/') || trimmed.contains('/')) {
+      return trimmed.startsWith('/') ? trimmed : '/$trimmed';
+    }
+    return null;
+  }
+
+  String? _extractPath(dynamic decoded) {
+    if (decoded is String) {
+      return _normalizeRawPath(decoded);
+    }
+
+    if (decoded is List || decoded is Iterable) {
+      final segments = decoded.cast<String>();
+      return '/${segments.join('/')}';
+    }
+
+    if (decoded is Map) {
+      final knownKeys = [
+        'path',
+        'filePath',
+        'fullPath',
+        'pathSegments',
+        'segments',
+        'name',
+        'file',
+      ];
+
+      for (final key in knownKeys) {
+        if (!decoded.containsKey(key)) continue;
+        final pathVal = decoded[key];
+        if (pathVal is String) {
+          return _normalizeRawPath(pathVal);
+        }
+        if (pathVal is List) {
+          final segments = pathVal.cast<String>();
+          return '/${segments.join('/')}';
+        }
+      }
+    }
+
+    return null;
   }
 
   // disconnect
